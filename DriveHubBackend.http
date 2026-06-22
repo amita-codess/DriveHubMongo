@@ -1,0 +1,6 @@
+@DriveHubBackend_HostAddress = http://localhost:5262
+
+GET {{DriveHubBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
