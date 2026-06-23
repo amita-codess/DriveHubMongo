@@ -11,6 +11,22 @@
   },
   {
     "ContainingType": "UsersController",
+    "Method": "Login",
+    "RelativePath": "api/Users/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "DriveHubBackend.DTO.LoginDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "UsersController",
     "Method": "Register",
     "RelativePath": "api/Users/register",
     "HttpMethod": "POST",

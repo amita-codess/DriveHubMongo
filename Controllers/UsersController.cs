@@ -55,4 +55,38 @@ public class UsersController(IUserRepository userRepository) : ControllerBase
         var users = await _userRepository.GetAllUsersAsync();
         return Ok(users);
     }
+
+
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(LoginDto dto)
+    {
+        var user = await _userRepository
+            .GetUserByEmailAsync(dto.Email);
+
+        if (user == null)
+        {
+            return BadRequest("Invalid Email");
+        }
+
+        bool isPasswordValid =
+            BCrypt.Net.BCrypt.Verify(
+                dto.Password,
+                user.PasswordHash
+            );
+
+        if (!isPasswordValid)
+        {
+            return BadRequest("Invalid Password");
+        }
+
+        return Ok(new
+        {
+            Message = "Login Successful",
+            UserId = user.Id,
+            Name = user.Name,
+            Email = user.Email,
+            Role = user.Role
+        });
+    }
 }
