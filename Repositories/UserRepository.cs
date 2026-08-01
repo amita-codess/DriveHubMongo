@@ -1,37 +1,36 @@
-﻿using DriveHubBackend.Data;
-using DriveHubBackend.Model;
-using Microsoft.EntityFrameworkCore;
+﻿using DriveHubMongo.Data;
+using DriveHubMongo.Model;
+using DriveHubMongo.Repositories;
+using MongoDB.Driver;
 
-namespace DriveHubBackend.Repositories
+namespace DriveHubMongo.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private ApplicationDbContext _context;
+        private readonly MongoDbContext _context;
 
-        public UserRepository(ApplicationDbContext context)
+        public UserRepository(MongoDbContext context)
         {
             _context = context;
         }
 
-       
         public async Task<User?> GetUserByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return await _context.Users
+                .Find(u => u.Email == email)
+                .FirstOrDefaultAsync();
         }
 
         public async Task AddUserAsync(User user)
         {
-            await _context.Users.AddAsync(user);
-        }
-
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
+            await _context.Users.InsertOneAsync(user);
         }
 
         public async Task<List<User>> GetAllUsersAsync()
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Users
+                .Find(_ => true)
+                .ToListAsync();
         }
     }
 }

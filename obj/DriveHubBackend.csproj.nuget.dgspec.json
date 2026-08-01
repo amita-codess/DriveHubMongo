@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Dell\\source\\repos\\DriveHubBackend\\DriveHubBackend\\DriveHubBackend.csproj": {}
+    "C:\\Users\\Dell\\OneDrive\\Desktop\\DriveHubMongo\\DriveHubBackend\\DriveHubBackend.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Dell\\source\\repos\\DriveHubBackend\\DriveHubBackend\\DriveHubBackend.csproj": {
+    "C:\\Users\\Dell\\OneDrive\\Desktop\\DriveHubMongo\\DriveHubBackend\\DriveHubBackend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Dell\\source\\repos\\DriveHubBackend\\DriveHubBackend\\DriveHubBackend.csproj",
+        "projectUniqueName": "C:\\Users\\Dell\\OneDrive\\Desktop\\DriveHubMongo\\DriveHubBackend\\DriveHubBackend.csproj",
         "projectName": "DriveHubBackend",
-        "projectPath": "C:\\Users\\Dell\\source\\repos\\DriveHubBackend\\DriveHubBackend\\DriveHubBackend.csproj",
+        "projectPath": "C:\\Users\\Dell\\OneDrive\\Desktop\\DriveHubMongo\\DriveHubBackend\\DriveHubBackend.csproj",
         "packagesPath": "C:\\Users\\Dell\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Dell\\source\\repos\\DriveHubBackend\\DriveHubBackend\\obj\\",
+        "outputPath": "C:\\Users\\Dell\\OneDrive\\Desktop\\DriveHubMongo\\DriveHubBackend\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -1,4 +1,4 @@
-﻿namespace DriveHubBackend.DTO
+﻿namespace DriveHubMongo.DTO
 {
     public class LoginDto
     {

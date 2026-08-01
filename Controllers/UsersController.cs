@@ -1,9 +1,7 @@
-using DriveHubBackend.Data;
-using DriveHubBackend.DTO;
-using DriveHubBackend.Model;
-using DriveHubBackend.Repositories;
+using DriveHubMongo.DTO;
+using DriveHubMongo.Model;
+using DriveHubMongo.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -19,8 +17,7 @@ public class UsersController(IUserRepository userRepository) : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var existingUser =
-            await _userRepository.GetUserByEmailAsync(dto.Email);
+        var existingUser = await _userRepository.GetUserByEmailAsync(dto.Email);
 
         if (existingUser != null)
         {
@@ -32,22 +29,17 @@ public class UsersController(IUserRepository userRepository) : ControllerBase
             Name = dto.Name,
             Email = dto.Email,
             MobileNumber = dto.MobileNumber,
-            PasswordHash =
-                BCrypt.Net.BCrypt.HashPassword(dto.Password),
-
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             Role = "User"
         };
 
         await _userRepository.AddUserAsync(user);
-        await _userRepository.SaveChangesAsync();
 
         return Ok(new
         {
             Message = "Registration Successful"
         });
-
     }
-
 
     [HttpGet]
     public async Task<IActionResult> GetAllUsers()
@@ -56,24 +48,19 @@ public class UsersController(IUserRepository userRepository) : ControllerBase
         return Ok(users);
     }
 
-
-
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginDto dto)
     {
-        var user = await _userRepository
-            .GetUserByEmailAsync(dto.Email);
+        var user = await _userRepository.GetUserByEmailAsync(dto.Email);
 
         if (user == null)
         {
             return BadRequest("Invalid Email");
         }
 
-        bool isPasswordValid =
-            BCrypt.Net.BCrypt.Verify(
-                dto.Password,
-                user.PasswordHash
-            );
+        bool isPasswordValid = BCrypt.Net.BCrypt.Verify(
+            dto.Password,
+            user.PasswordHash);
 
         if (!isPasswordValid)
         {

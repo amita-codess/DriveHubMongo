@@ -1,7 +1,7 @@
-using DriveHubBackend.Data;
-using DriveHubBackend.Repositories;
+using DriveHubMongo.Data;
+using DriveHubMongo.Model;
+using DriveHubMongo.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -11,8 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 // ---------------- Controllers ----------------
 builder.Services.AddControllers();
 
+
 // ---------------- Swagger ----------------
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -21,7 +23,6 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1"
     });
 
-    // JWT Authorization in Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -29,34 +30,39 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer eyJhbGciOi...\""
+        Description = "JWT Authorization header using the Bearer scheme."
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
-{
     {
-        new OpenApiSecurityScheme
         {
-            Reference = new OpenApiReference
+            new OpenApiSecurityScheme
             {
-                Type = ReferenceType.SecurityScheme,
-                Id = "Bearer"
-            }
-        },
-        Array.Empty<string>()
-    }
-});
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
 
-// ---------------- DB Context ----------------
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    )
-);
+
+// ---------------- MongoDB Configuration ----------------
+builder.Services.Configure<MongoDbSettings>(
+    builder.Configuration.GetSection("MongoDbSettings"));
+
+builder.Services.AddSingleton<MongoDbContext>();
+
 
 // ---------------- Repository ----------------
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ITripRepository, TripRepository>();
+builder.Services.AddScoped<IEmergencyRepository, EmergencyRepository>();
+builder.Services.AddScoped<IConstructionRepository, ConstructionRepository>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
 
 // ---------------- JWT Authentication ----------------
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -71,23 +77,30 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
+
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+            Encoding.UTF8.GetBytes(
+                builder.Configuration["Jwt:Key"]!
+            ))
     };
 });
 
-// for cors
+
+// ---------------- CORS ----------------
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        policy => policy.AllowAnyOrigin()
-                      .AllowAnyMethod()
-                      .AllowAnyHeader());
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
 });
 
 
 // ---------------- Build App ----------------
 var app = builder.Build();
+
 
 // ---------------- Middleware ----------------
 if (app.Environment.IsDevelopment())
@@ -95,14 +108,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
 
 app.UseAuthentication();
+
 app.UseAuthorization();
 
+
 app.MapControllers();
+
 
 app.Run();

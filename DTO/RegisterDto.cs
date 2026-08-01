@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DriveHubBackend.DTO
+namespace DriveHubMongo.DTO
 {
     public class RegisterDto
     {

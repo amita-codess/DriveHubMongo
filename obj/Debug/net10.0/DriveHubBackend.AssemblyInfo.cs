@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DriveHubBackend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+64f224a2d50be474ccc55cbe437739438eb35dd4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a0fa67535d37c7dd27895e6787e73477ef664fa9")]
 [assembly: System.Reflection.AssemblyProductAttribute("DriveHubBackend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DriveHubBackend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
