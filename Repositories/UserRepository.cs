@@ -32,5 +32,13 @@ namespace DriveHubMongo.Repositories
                 .Find(_ => true)
                 .ToListAsync();
         }
+
+        public async Task UpdateUserAsync(User user)
+        {
+            await _context.Users.ReplaceOneAsync(
+                u => u.Id == user.Id,
+                user
+            );
+        }
     }
 }

@@ -5,12 +5,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using DriveHubMongo.Services; 
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------------- Controllers ----------------
 builder.Services.AddControllers();
-
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // ---------------- Swagger ----------------
 builder.Services.AddEndpointsApiExplorer();
@@ -103,11 +104,10 @@ var app = builder.Build();
 
 
 // ---------------- Middleware ----------------
-if (app.Environment.IsDevelopment())
-{
+
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+
 app.UseStaticFiles();
 
 app.UseHttpsRedirection();

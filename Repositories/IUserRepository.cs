@@ -8,5 +8,7 @@ namespace DriveHubMongo.Repositories
         Task AddUserAsync(User user);
 
         Task<List<User>> GetAllUsersAsync();
+
+        Task UpdateUserAsync(User user);
     }
 }
