@@ -64,6 +64,10 @@ builder.Services.AddScoped<ITripRepository, TripRepository>();
 builder.Services.AddScoped<IEmergencyRepository, EmergencyRepository>();
 builder.Services.AddScoped<IConstructionRepository, ConstructionRepository>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
+builder.Services.AddScoped<IAgricultureRepository, AgricultureRepository>();
+builder.Services.AddScoped<IHeavyLoadRepository, HeavyLoadRepository>();
+builder.Services.AddScoped<ILightLoadRepository, LightLoadRepository>();
+builder.Services.AddScoped<IRentalCarRepository, RentalCarRepository>();
 
 // ---------------- JWT Authentication ----------------
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -97,6 +101,11 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
+
+
+//---------------- Razorpay Configuration ----------------
+builder.Services.Configure<RazorpaySettings>(
+    builder.Configuration.GetSection("Razorpay"));
 
 
 // ---------------- Build App ----------------

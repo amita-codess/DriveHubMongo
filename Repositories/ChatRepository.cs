@@ -11,6 +11,7 @@ namespace DriveHubMongo.Repositories
         private readonly IMongoCollection<Trip> _tripCollection;
         private readonly IMongoCollection<Emergency> _emergencyCollection;
         private readonly IMongoCollection<Construction> _constructionCollection;
+        private readonly IMongoCollection<Agriculture> _agricultureCollection;
 
         public ChatRepository(IOptions<MongoDbSettings> mongoDbSettings)
         {
@@ -21,6 +22,7 @@ namespace DriveHubMongo.Repositories
             _tripCollection = mongoDatabase.GetCollection<Trip>("Trips");
             _emergencyCollection = mongoDatabase.GetCollection<Emergency>("Emergency");
             _constructionCollection = mongoDatabase.GetCollection<Construction>("Construction");
+            _agricultureCollection = mongoDatabase.GetCollection<Agriculture>("Agriculture");
         }
 
         public async Task<List<ChatSearchResultDto>> SearchVehiclesAsync(
@@ -127,6 +129,40 @@ namespace DriveHubMongo.Repositories
                 Location = x.Location,
                 OwnerName = x.UserName,
                 OwnerContact = x.ContactNumber,
+                ImagePath = x.ImagePath
+            }));
+
+
+            // =========================
+            // Agriculture Search
+            // =========================
+
+            var agricultureFilter = Builders<Agriculture>.Filter.Empty;
+
+            if (!string.IsNullOrWhiteSpace(vehicleName))
+            {
+                agricultureFilter &= Builders<Agriculture>.Filter.Regex(
+                    x => x.VehicleName,
+                    new BsonRegularExpression(vehicleName, "i"));
+            }
+
+            if (!string.IsNullOrWhiteSpace(location))
+            {
+                agricultureFilter &= Builders<Agriculture>.Filter.Regex(
+                    x => x.Location,
+                    new BsonRegularExpression(location, "i"));
+            }
+
+            var agriculture = await _agricultureCollection.Find(agricultureFilter).ToListAsync();
+
+            results.AddRange(agriculture.Select(x => new ChatSearchResultDto
+            {
+                Category = "Agriculture",
+                VehicleName = x.VehicleName,
+                VehicleNumber = x.VehicleNumber,
+                Location = x.Location,
+                OwnerName = x.OwnerName,
+                OwnerContact = x.OwnerContact,
                 ImagePath = x.ImagePath
             }));
 
