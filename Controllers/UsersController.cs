@@ -183,4 +183,37 @@ public class UsersController(
         });
     } // ResetPassword ends
 
+
+    //googlelogin start
+    [HttpPost("google-login")]
+    public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto dto)
+    {
+        var user = await _userRepository.GetUserByEmailAsync(dto.Email);
+
+        if (user == null)
+        {
+            user = new User
+            {
+                Name = dto.Name,
+                Email = dto.Email,
+                PasswordHash = "",
+                Role = "User"
+            };
+
+            await _userRepository.AddUserAsync(user);
+
+            user = await _userRepository.GetUserByEmailAsync(dto.Email);
+        }
+
+        return Ok(new
+        {
+            userId = user.Id,
+            name = user.Name,
+            email = user.Email,
+            role = user.Role
+        });
+    }
+
+    //googlelogin end
+
 }  // UsersController ends 

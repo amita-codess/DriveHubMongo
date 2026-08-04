@@ -107,6 +107,11 @@ namespace DriveHubMongo.Controllers
             string id,
             [FromForm] AddHeavyLoadDto dto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var existing = await _repository.GetByIdAsync(id);
 
             if (existing == null)
