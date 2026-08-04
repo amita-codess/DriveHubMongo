@@ -209,6 +209,22 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "DriveHubMongo.Controllers.AgricultureController",
+    "Method": "GetByUser",
+    "RelativePath": "api/Agriculture/user/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "DriveHubMongo.Controllers.ChatController",
     "Method": "Search",
     "RelativePath": "api/Chat/search",
@@ -848,6 +864,11 @@
         "Name": "TransactionId",
         "Type": "System.String",
         "IsRequired": false
+      },
+      {
+        "Name": "image",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -1057,6 +1078,11 @@
       {
         "Name": "TransactionId",
         "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "image",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
         "IsRequired": false
       }
     ],

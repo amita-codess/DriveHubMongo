@@ -1,6 +1,7 @@
 ﻿using DriveHubMongo.DTO;
 using DriveHubMongo.Model;
 using DriveHubMongo.Repositories;
+using DriveHubMongo.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DriveHubMongo.Controllers
@@ -10,14 +11,14 @@ namespace DriveHubMongo.Controllers
     public class ConstructionController : ControllerBase
     {
         private readonly IConstructionRepository _constructionRepository;
-        private readonly IWebHostEnvironment _environment;
+        private readonly CloudinaryService _cloudinaryService;
 
         public ConstructionController(
             IConstructionRepository constructionRepository,
-            IWebHostEnvironment environment)
+            CloudinaryService cloudinaryService)
         {
             _constructionRepository = constructionRepository;
-            _environment = environment;
+            _cloudinaryService = cloudinaryService;
         }
 
         // GET: api/Construction
@@ -44,24 +45,16 @@ namespace DriveHubMongo.Controllers
         [HttpPost]
         public async Task<IActionResult> AddConstruction([FromForm] AddConstructionDto dto)
         {
-            string imagePath = "/uploads/default-construction.webp";
+            string imagePath = "/default-construction.webp";
 
-            if (dto.Image != null && dto.Image.Length > 0)
+            if (dto.Image != null)
             {
-                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
+                var uploadedImage = await _cloudinaryService.UploadImageAsync(dto.Image);
 
-                if (!Directory.Exists(uploadsFolder))
-                    Directory.CreateDirectory(uploadsFolder);
-
-                var fileName = Guid.NewGuid() + Path.GetExtension(dto.Image.FileName);
-                var filePath = Path.Combine(uploadsFolder, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                if (!string.IsNullOrWhiteSpace(uploadedImage))
                 {
-                    await dto.Image.CopyToAsync(stream);
+                    imagePath = uploadedImage;
                 }
-
-                imagePath = "/uploads/" + fileName;
             }
 
             var construction = new Construction
@@ -108,22 +101,14 @@ namespace DriveHubMongo.Controllers
             construction.Description = dto.Description;
             construction.Status = dto.Status;
 
-            if (dto.Image != null && dto.Image.Length > 0)
+            if (dto.Image != null)
             {
-                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
+                var uploadedImage = await _cloudinaryService.UploadImageAsync(dto.Image);
 
-                if (!Directory.Exists(uploadsFolder))
-                    Directory.CreateDirectory(uploadsFolder);
-
-                var fileName = Guid.NewGuid() + Path.GetExtension(dto.Image.FileName);
-                var filePath = Path.Combine(uploadsFolder, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                if (!string.IsNullOrWhiteSpace(uploadedImage))
                 {
-                    await dto.Image.CopyToAsync(stream);
+                    construction.ImagePath = uploadedImage;
                 }
-
-                construction.ImagePath = "/uploads/" + fileName;
             }
 
             await _constructionRepository.UpdateConstructionAsync(id, construction);

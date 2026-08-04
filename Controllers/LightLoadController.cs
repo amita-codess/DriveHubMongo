@@ -1,6 +1,7 @@
 ﻿using DriveHubMongo.DTO;
 using DriveHubMongo.Model;
 using DriveHubMongo.Repositories;
+using DriveHubMongo.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DriveHubMongo.Controllers
@@ -10,14 +11,14 @@ namespace DriveHubMongo.Controllers
     public class LightLoadController : ControllerBase
     {
         private readonly ILightLoadRepository _repository;
-        private readonly IWebHostEnvironment _environment;
+        private readonly CloudinaryService _cloudinaryService;
 
         public LightLoadController(
             ILightLoadRepository repository,
-            IWebHostEnvironment environment)
+            CloudinaryService cloudinaryService)
         {
             _repository = repository;
-            _environment = environment;
+            _cloudinaryService = cloudinaryService;
         }
 
         [HttpGet]
@@ -50,6 +51,18 @@ namespace DriveHubMongo.Controllers
         {
             try
             {
+                string imagePath = "/default-lightload.webp";
+
+                if (image != null)
+                {
+                    var uploadedImage = await _cloudinaryService.UploadImageAsync(image);
+
+                    if (!string.IsNullOrWhiteSpace(uploadedImage))
+                    {
+                        imagePath = uploadedImage;
+                    }
+                }
+
                 var lightLoad = new LightLoad
                 {
                     UserId = dto.UserId,
@@ -64,36 +77,8 @@ namespace DriveHubMongo.Controllers
                     PaymentMethod = dto.PaymentMethod,
                     PaymentStatus = dto.PaymentStatus,
                     TransactionId = dto.TransactionId,
-                    ImagePath = "/uploads/default-lightload.webp"
+                    ImagePath = imagePath
                 };
-
-                if (image != null)
-                {
-                    var uploadPath = Path.Combine(
-                        _environment.WebRootPath,
-                        "uploads"
-                    );
-
-                    if (!Directory.Exists(uploadPath))
-                        Directory.CreateDirectory(uploadPath);
-
-                    var fileName = Guid.NewGuid() +
-                                   Path.GetExtension(image.FileName);
-
-                    var filePath = Path.Combine(
-                        uploadPath,
-                        fileName
-                    );
-
-                    using var stream = new FileStream(
-                        filePath,
-                        FileMode.Create
-                    );
-
-                    await image.CopyToAsync(stream);
-
-                    lightLoad.ImagePath = "/uploads/" + fileName;
-                }
 
                 await _repository.CreateAsync(lightLoad);
 
@@ -109,16 +94,28 @@ namespace DriveHubMongo.Controllers
             }
         }
 
-
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(
             string id,
-            [FromForm] AddLightLoadDto dto)
+            [FromForm] AddLightLoadDto dto,
+            IFormFile? image)
         {
             var existing = await _repository.GetByIdAsync(id);
 
             if (existing == null)
                 return NotFound();
+
+            string imagePath = existing.ImagePath;
+
+            if (image != null)
+            {
+                var uploadedImage = await _cloudinaryService.UploadImageAsync(image);
+
+                if (!string.IsNullOrWhiteSpace(uploadedImage))
+                {
+                    imagePath = uploadedImage;
+                }
+            }
 
             var lightLoad = new LightLoad
             {
@@ -135,7 +132,7 @@ namespace DriveHubMongo.Controllers
                 PaymentMethod = existing.PaymentMethod,
                 PaymentStatus = existing.PaymentStatus,
                 TransactionId = existing.TransactionId,
-                ImagePath = existing.ImagePath
+                ImagePath = imagePath
             };
 
             await _repository.UpdateAsync(id, lightLoad);
@@ -145,7 +142,6 @@ namespace DriveHubMongo.Controllers
                 message = "Light Load Updated Successfully"
             });
         }
-
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)

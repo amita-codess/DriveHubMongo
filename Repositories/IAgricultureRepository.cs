@@ -13,5 +13,6 @@ namespace DriveHubMongo.Repositories
         Task UpdateAsync(string id, Agriculture agriculture);
 
         Task DeleteAsync(string id);
+        Task<List<Agriculture>> GetByUserIdAsync(string userId);
     }
 }

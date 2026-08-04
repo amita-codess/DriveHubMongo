@@ -1,6 +1,7 @@
 ﻿using DriveHubMongo.DTO;
 using DriveHubMongo.Model;
 using DriveHubMongo.Repositories;
+using DriveHubMongo.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DriveHubMongo.Controllers
@@ -10,14 +11,14 @@ namespace DriveHubMongo.Controllers
     public class HeavyLoadController : ControllerBase
     {
         private readonly IHeavyLoadRepository _repository;
-        private readonly IWebHostEnvironment _environment;
+        private readonly CloudinaryService _cloudinaryService;
 
         public HeavyLoadController(
             IHeavyLoadRepository repository,
-            IWebHostEnvironment environment)
+            CloudinaryService cloudinaryService)
         {
             _repository = repository;
-            _environment = environment;
+            _cloudinaryService = cloudinaryService;
         }
 
         [HttpGet]
@@ -50,6 +51,18 @@ namespace DriveHubMongo.Controllers
         {
             try
             {
+                string imagePath = "/default-heavyload.webp";
+
+                if (image != null)
+                {
+                    var uploadedImage = await _cloudinaryService.UploadImageAsync(image);
+
+                    if (!string.IsNullOrWhiteSpace(uploadedImage))
+                    {
+                        imagePath = uploadedImage;
+                    }
+                }
+
                 var heavyLoad = new HeavyLoad
                 {
                     UserId = dto.UserId,
@@ -64,29 +77,8 @@ namespace DriveHubMongo.Controllers
                     PaymentMethod = dto.PaymentMethod,
                     PaymentStatus = dto.PaymentStatus,
                     TransactionId = dto.TransactionId,
-                    ImagePath = "/uploads/default-heavyload.webp"
+                    ImagePath = imagePath
                 };
-
-                if (image != null)
-                {
-                    var uploadPath = Path.Combine(
-                        _environment.WebRootPath,
-                        "uploads"
-                    );
-
-                    if (!Directory.Exists(uploadPath))
-                        Directory.CreateDirectory(uploadPath);
-
-                    var fileName = Guid.NewGuid() +
-                                   Path.GetExtension(image.FileName);
-
-                    var filePath = Path.Combine(uploadPath, fileName);
-
-                    using var stream = new FileStream(filePath, FileMode.Create);
-                    await image.CopyToAsync(stream);
-
-                    heavyLoad.ImagePath = "/uploads/" + fileName;
-                }
 
                 await _repository.CreateAsync(heavyLoad);
 
@@ -105,7 +97,8 @@ namespace DriveHubMongo.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(
             string id,
-            [FromForm] AddHeavyLoadDto dto)
+            [FromForm] AddHeavyLoadDto dto,
+            IFormFile? image)
         {
             if (!ModelState.IsValid)
             {
@@ -116,6 +109,18 @@ namespace DriveHubMongo.Controllers
 
             if (existing == null)
                 return NotFound();
+
+            string imagePath = existing.ImagePath;
+
+            if (image != null)
+            {
+                var uploadedImage = await _cloudinaryService.UploadImageAsync(image);
+
+                if (!string.IsNullOrWhiteSpace(uploadedImage))
+                {
+                    imagePath = uploadedImage;
+                }
+            }
 
             var heavyLoad = new HeavyLoad
             {
@@ -132,7 +137,7 @@ namespace DriveHubMongo.Controllers
                 PaymentMethod = existing.PaymentMethod,
                 PaymentStatus = existing.PaymentStatus,
                 TransactionId = existing.TransactionId,
-                ImagePath = existing.ImagePath
+                ImagePath = imagePath
             };
 
             await _repository.UpdateAsync(id, heavyLoad);

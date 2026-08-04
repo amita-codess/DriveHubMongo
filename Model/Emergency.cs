@@ -26,8 +26,7 @@ namespace DriveHubMongo.Model
 
         // Image URL or uploaded image path
         public string ImagePath { get; set; } =
-            "/uploads/default-emergency.webp";
-
+        "/default-emergency.webp";
         public string PaymentMethod { get; set; } = "";
         public string PaymentStatus { get; set; } = "";
         public string TransactionId { get; set; } = "";

@@ -1,6 +1,7 @@
 ﻿using DriveHubMongo.DTO;
 using DriveHubMongo.Model;
 using DriveHubMongo.Repositories;
+using DriveHubMongo.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DriveHubMongo.Controllers
@@ -10,14 +11,14 @@ namespace DriveHubMongo.Controllers
     public class EmergencyController : ControllerBase
     {
         private readonly IEmergencyRepository _emergencyRepository;
-        private readonly IWebHostEnvironment _environment;
+        private readonly CloudinaryService _cloudinaryService;
 
         public EmergencyController(
             IEmergencyRepository emergencyRepository,
-            IWebHostEnvironment environment)
+            CloudinaryService cloudinaryService)
         {
             _emergencyRepository = emergencyRepository;
-            _environment = environment;
+            _cloudinaryService = cloudinaryService;
         }
 
         // GET: api/Emergency
@@ -44,27 +45,16 @@ namespace DriveHubMongo.Controllers
         [HttpPost]
         public async Task<IActionResult> AddEmergency([FromForm] AddEmergencyDto dto)
         {
-            string imagePath = "/uploads/default-emergency.webp";
+            string imagePath = "/default-emergency.webp";
 
-            if (dto.Image != null && dto.Image.Length > 0)
+            if (dto.Image != null)
             {
-                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
+                var uploadedImage = await _cloudinaryService.UploadImageAsync(dto.Image);
 
-                if (!Directory.Exists(uploadsFolder))
+                if (!string.IsNullOrWhiteSpace(uploadedImage))
                 {
-                    Directory.CreateDirectory(uploadsFolder);
+                    imagePath = uploadedImage;
                 }
-
-                var fileName = Guid.NewGuid() + Path.GetExtension(dto.Image.FileName);
-
-                var filePath = Path.Combine(uploadsFolder, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await dto.Image.CopyToAsync(stream);
-                }
-
-                imagePath = "/uploads/" + fileName;
             }
 
             var emergency = new Emergency
@@ -109,25 +99,9 @@ namespace DriveHubMongo.Controllers
             emergency.Location = dto.Location;
             emergency.Availability = dto.Availability;
 
-            if (dto.Image != null && dto.Image.Length > 0)
+            if (dto.Image != null)
             {
-                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
-
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-
-                var fileName = Guid.NewGuid() + Path.GetExtension(dto.Image.FileName);
-
-                var filePath = Path.Combine(uploadsFolder, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await dto.Image.CopyToAsync(stream);
-                }
-
-                emergency.ImagePath = "/uploads/" + fileName;
+                emergency.ImagePath = await _cloudinaryService.UploadImageAsync(dto.Image);
             }
 
             await _emergencyRepository.UpdateEmergencyAsync(id, emergency);

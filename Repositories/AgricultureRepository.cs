@@ -31,6 +31,13 @@ namespace DriveHubMongo.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<List<Agriculture>> GetByUserIdAsync(string userId)
+        {
+            return await _agricultureCollection
+                .Find(x => x.UserId == userId)
+                .ToListAsync();
+        }
+
         public async Task CreateAsync(Agriculture agriculture)
         {
             await _agricultureCollection.InsertOneAsync(agriculture);

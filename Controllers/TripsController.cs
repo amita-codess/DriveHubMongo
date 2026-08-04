@@ -1,6 +1,7 @@
 ﻿using DriveHubMongo.DTO;
 using DriveHubMongo.Model;
 using DriveHubMongo.Repositories;
+using DriveHubMongo.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DriveHubMongo.Controllers
@@ -10,14 +11,14 @@ namespace DriveHubMongo.Controllers
     public class TripsController : ControllerBase
     {
         private readonly ITripRepository _tripRepository;
-        private readonly IWebHostEnvironment _environment;
+        private readonly CloudinaryService _cloudinaryService;
 
         public TripsController(
             ITripRepository tripRepository,
-            IWebHostEnvironment environment)
+            CloudinaryService cloudinaryService)
         {
             _tripRepository = tripRepository;
-            _environment = environment;
+            _cloudinaryService = cloudinaryService;
         }
 
         // GET: api/Trips
@@ -44,27 +45,16 @@ namespace DriveHubMongo.Controllers
         [HttpPost]
         public async Task<IActionResult> AddTrip([FromForm] AddTripDto dto)
         {
-            string imagePath = "/uploads/default-trip.webp";
+            string imagePath = "/default-trip.webp";
 
-            if (dto.Image != null && dto.Image.Length > 0)
+            if (dto.Image != null)
             {
-                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
+                var uploadedImage = await _cloudinaryService.UploadImageAsync(dto.Image);
 
-                if (!Directory.Exists(uploadsFolder))
+                if (!string.IsNullOrWhiteSpace(uploadedImage))
                 {
-                    Directory.CreateDirectory(uploadsFolder);
+                    imagePath = uploadedImage;
                 }
-
-                var fileName = Guid.NewGuid() + Path.GetExtension(dto.Image.FileName);
-
-                var filePath = Path.Combine(uploadsFolder, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await dto.Image.CopyToAsync(stream);
-                }
-
-                imagePath = "/uploads/" + fileName;
             }
 
             var trip = new Trip
@@ -110,27 +100,14 @@ namespace DriveHubMongo.Controllers
             trip.OwnerContact = dto.OwnerContact;
             trip.SeatingCapacity = dto.SeatingCapacity;
             trip.ACAvailable = dto.ACAvailable;
-
+            trip.UserId = dto.UserId;
+            trip.PaymentMethod = dto.PaymentMethod;
+            trip.PaymentStatus = dto.PaymentStatus;
+            trip.TransactionId = dto.TransactionId;
 
             if (dto.Image != null && dto.Image.Length > 0)
             {
-                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads");
-
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-
-                var fileName = Guid.NewGuid() + Path.GetExtension(dto.Image.FileName);
-
-                var filePath = Path.Combine(uploadsFolder, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await dto.Image.CopyToAsync(stream);
-                }
-
-                trip.ImagePath = "/uploads/" + fileName;
+                trip.ImagePath = await _cloudinaryService.UploadImageAsync(dto.Image);
             }
 
             await _tripRepository.UpdateTripAsync(id, trip);
@@ -156,6 +133,7 @@ namespace DriveHubMongo.Controllers
             return Ok("Trip Deleted Successfully");
         }
 
+        // GET: api/Trips/user/{userId}
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetTripsByUserId(string userId)
         {

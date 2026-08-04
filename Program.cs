@@ -68,6 +68,10 @@ builder.Services.AddScoped<IAgricultureRepository, AgricultureRepository>();
 builder.Services.AddScoped<IHeavyLoadRepository, HeavyLoadRepository>();
 builder.Services.AddScoped<ILightLoadRepository, LightLoadRepository>();
 builder.Services.AddScoped<IRentalCarRepository, RentalCarRepository>();
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
+
+builder.Services.AddScoped<CloudinaryService>();
 
 // ---------------- JWT Authentication ----------------
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
