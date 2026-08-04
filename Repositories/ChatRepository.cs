@@ -12,6 +12,9 @@ namespace DriveHubMongo.Repositories
         private readonly IMongoCollection<Emergency> _emergencyCollection;
         private readonly IMongoCollection<Construction> _constructionCollection;
         private readonly IMongoCollection<Agriculture> _agricultureCollection;
+        private readonly IMongoCollection<HeavyLoad> _heavyLoadCollection;
+        private readonly IMongoCollection<LightLoad> _lightLoadCollection;
+        private readonly IMongoCollection<RentalCar> _rentalCarCollection;
 
         public ChatRepository(IOptions<MongoDbSettings> mongoDbSettings)
         {
@@ -23,6 +26,9 @@ namespace DriveHubMongo.Repositories
             _emergencyCollection = mongoDatabase.GetCollection<Emergency>("Emergency");
             _constructionCollection = mongoDatabase.GetCollection<Construction>("Construction");
             _agricultureCollection = mongoDatabase.GetCollection<Agriculture>("Agriculture");
+            _heavyLoadCollection = mongoDatabase.GetCollection<HeavyLoad>("HeavyLoads");
+            _lightLoadCollection = mongoDatabase.GetCollection<LightLoad>("LightLoads");
+            _rentalCarCollection = mongoDatabase.GetCollection<RentalCar>("RentalCars");
         }
 
         public async Task<List<ChatSearchResultDto>> SearchVehiclesAsync(
@@ -158,6 +164,108 @@ namespace DriveHubMongo.Repositories
             results.AddRange(agriculture.Select(x => new ChatSearchResultDto
             {
                 Category = "Agriculture",
+                VehicleName = x.VehicleName,
+                VehicleNumber = x.VehicleNumber,
+                Location = x.Location,
+                OwnerName = x.OwnerName,
+                OwnerContact = x.OwnerContact,
+                ImagePath = x.ImagePath
+            }));
+
+
+            // =========================
+            // Heavy Load Search
+            // =========================
+
+            var heavyLoadFilter = Builders<HeavyLoad>.Filter.Empty;
+
+            if (!string.IsNullOrWhiteSpace(vehicleName))
+            {
+                heavyLoadFilter &= Builders<HeavyLoad>.Filter.Regex(
+                    x => x.VehicleName,
+                    new BsonRegularExpression(vehicleName, "i"));
+            }
+
+            if (!string.IsNullOrWhiteSpace(location))
+            {
+                heavyLoadFilter &= Builders<HeavyLoad>.Filter.Regex(
+                    x => x.Location,
+                    new BsonRegularExpression(location, "i"));
+            }
+
+            var heavyLoads = await _heavyLoadCollection.Find(heavyLoadFilter).ToListAsync();
+
+            results.AddRange(heavyLoads.Select(x => new ChatSearchResultDto
+            {
+                Category = "Heavy Load",
+                VehicleName = x.VehicleName,
+                VehicleNumber = x.VehicleNumber,
+                Location = x.Location,
+                OwnerName = x.OwnerName,
+                OwnerContact = x.OwnerContact,
+                ImagePath = x.ImagePath
+            }));
+
+
+            // =========================
+            // Light Load Search
+            // =========================
+
+            var lightLoadFilter = Builders<LightLoad>.Filter.Empty;
+
+            if (!string.IsNullOrWhiteSpace(vehicleName))
+            {
+                lightLoadFilter &= Builders<LightLoad>.Filter.Regex(
+                    x => x.VehicleName,
+                    new BsonRegularExpression(vehicleName, "i"));
+            }
+
+            if (!string.IsNullOrWhiteSpace(location))
+            {
+                lightLoadFilter &= Builders<LightLoad>.Filter.Regex(
+                    x => x.Location,
+                    new BsonRegularExpression(location, "i"));
+            }
+
+            var lightLoads = await _lightLoadCollection.Find(lightLoadFilter).ToListAsync();
+
+            results.AddRange(lightLoads.Select(x => new ChatSearchResultDto
+            {
+                Category = "Light Load",
+                VehicleName = x.VehicleName,
+                VehicleNumber = x.VehicleNumber,
+                Location = x.Location,
+                OwnerName = x.OwnerName,
+                OwnerContact = x.OwnerContact,
+                ImagePath = x.ImagePath
+            }));
+
+
+            // =========================
+            // Rental Cars Search
+            // =========================
+
+            var rentalCarFilter = Builders<RentalCar>.Filter.Empty;
+
+            if (!string.IsNullOrWhiteSpace(vehicleName))
+            {
+                rentalCarFilter &= Builders<RentalCar>.Filter.Regex(
+                    x => x.VehicleName,
+                    new BsonRegularExpression(vehicleName, "i"));
+            }
+
+            if (!string.IsNullOrWhiteSpace(location))
+            {
+                rentalCarFilter &= Builders<RentalCar>.Filter.Regex(
+                    x => x.Location,
+                    new BsonRegularExpression(location, "i"));
+            }
+
+            var rentalCars = await _rentalCarCollection.Find(rentalCarFilter).ToListAsync();
+
+            results.AddRange(rentalCars.Select(x => new ChatSearchResultDto
+            {
+                Category = "Rental Cars",
                 VehicleName = x.VehicleName,
                 VehicleNumber = x.VehicleNumber,
                 Location = x.Location,
