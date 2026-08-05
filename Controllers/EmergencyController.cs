@@ -47,14 +47,22 @@ namespace DriveHubMongo.Controllers
         {
             string imagePath = "/default-emergency.webp";
 
-            if (dto.Image != null)
+            if (dto.Image != null && dto.Image.Length > 0)
             {
+                Console.WriteLine($"Image Received: {dto.Image.FileName}");
+
                 var uploadedImage = await _cloudinaryService.UploadImageAsync(dto.Image);
+
+                Console.WriteLine($"Uploaded URL: {uploadedImage}");
 
                 if (!string.IsNullOrWhiteSpace(uploadedImage))
                 {
                     imagePath = uploadedImage;
                 }
+            }
+            else
+            {
+                Console.WriteLine("Image is NULL");
             }
 
             var emergency = new Emergency
